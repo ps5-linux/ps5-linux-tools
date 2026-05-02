@@ -3,6 +3,7 @@
 #include <linux/fs.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
@@ -103,13 +104,13 @@ int main(int argc, char *argv[]) {
   fd = open("/dev/nvme0n1", O_RDWR);
   if (fd == -1) {
     perror("open");
-    return 1;
+    return EXIT_FAILURE;
   }
 
   if (ioctl(fd, BLKGETSIZE64, &bytes) == -1) {
     perror("ioctl");
     close(fd);
-    return 1;
+    return EXIT_FAILURE;
   }
 
   uint64_t total_sectors = bytes / SECTOR_SIZE;
@@ -167,14 +168,31 @@ int main(int argc, char *argv[]) {
   printf("\nPrimary GPT Header (LBA %" PRIu64 "):\n", gpt->my_lba);
   printf("  Signature: 0x%" PRIx64 "\n", gpt->signature);
   printf("  Header CRC32: 0x%08x\n", gpt->header_crc32);
-  printf("  Partition Entry Array CRC32: 0x%08x\n", gpt->partition_entry_array_crc32);
+  printf("  Partition Entry Array CRC32: 0x%08x\n",
+         gpt->partition_entry_array_crc32);
   printf("  Partition Entry LBA: %" PRIu64 "\n", gpt->partition_entry_lba);
 
   // Write mbr and primary gpt.
-  lseek(fd, (off_t)PS5_M2_MBR_LBA * SECTOR_SIZE, SEEK_SET);
-  write(fd, &mbr, SECTOR_SIZE);
-  write(fd, gpt_sector, SECTOR_SIZE);
-  write(fd, entries, sizeof(entries));
+  if (lseek(fd, (off_t)PS5_M2_MBR_LBA * SECTOR_SIZE, SEEK_SET) == (off_t)-1) {
+    perror("lseek");
+    close(fd);
+    return EXIT_FAILURE;
+  }
+  if (write(fd, &mbr, SECTOR_SIZE) != SECTOR_SIZE) {
+    perror("write");
+    close(fd);
+    return EXIT_FAILURE;
+  }
+  if (write(fd, gpt_sector, SECTOR_SIZE) != SECTOR_SIZE) {
+    perror("write");
+    close(fd);
+    return EXIT_FAILURE;
+  }
+  if (write(fd, entries, sizeof(entries)) != sizeof(entries)) {
+    perror("write");
+    close(fd);
+    return EXIT_FAILURE;
+  }
 
   gpt->my_lba = lastlba;
   gpt->alternate_lba = PS5_M2_MBR_LBA + GPT_PRIMARY_PARTITION_TABLE_LBA;
@@ -187,13 +205,30 @@ int main(int argc, char *argv[]) {
   printf("  Partition Entry LBA: %" PRIu64 "\n", gpt->partition_entry_lba);
 
   // Write alternate gpt.
-  lseek(fd, (off_t)(lastlba - GPT_ENTRY_NUMBERS) * SECTOR_SIZE, SEEK_SET);
-  write(fd, entries, sizeof(entries));
-  lseek(fd, (off_t)lastlba * SECTOR_SIZE, SEEK_SET);
-  write(fd, gpt_sector, SECTOR_SIZE);
+  if (lseek(fd, (off_t)(lastlba - GPT_ENTRY_NUMBERS) * SECTOR_SIZE, SEEK_SET) ==
+      (off_t)-1) {
+    perror("lseek");
+    close(fd);
+    return EXIT_FAILURE;
+  }
+  if (write(fd, entries, sizeof(entries)) != sizeof(entries)) {
+    perror("write");
+    close(fd);
+    return EXIT_FAILURE;
+  }
+  if (lseek(fd, (off_t)lastlba * SECTOR_SIZE, SEEK_SET) == (off_t)-1) {
+    perror("lseek");
+    close(fd);
+    return EXIT_FAILURE;
+  }
+  if (write(fd, gpt_sector, SECTOR_SIZE) != SECTOR_SIZE) {
+    perror("write");
+    close(fd);
+    return EXIT_FAILURE;
+  }
 
   printf("\nSuccessfully added Linux partition to m2.\n");
 
   close(fd);
-  return 0;
+  return EXIT_SUCCESS;
 }

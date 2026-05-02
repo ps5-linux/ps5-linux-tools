@@ -14,7 +14,7 @@ if [ -z "$ROOT_LABEL" ]; then
     exit 1
 fi
 
-echo "Preparing to kexec into $NVME_PART (Label: $ROOT_LABEL)..."
+echo "Mounting $NVME_PART ($ROOT_LABEL)..."
 
 mkdir -p "$MNT"
 mount -o ro "$NVME_PART" "$MNT"
@@ -27,17 +27,21 @@ if [[ ! -f "$VMLINUZ" ]]; then
     INITRD=$(ls -v $MNT/boot/initrd.img* | tail -n 1)
 fi
 
-echo "Using kernel: $VMLINUZ"
-echo "Using initrd: $INITRD"
+echo "kernel: $VMLINUZ"
+echo "initrd: $INITRD"
 
-CURRENT_CMD=$(cat /proc/cmdline | sed -e 's/root=[^ ]*//g')
+CMDLINE=$(cat /proc/cmdline | \
+    sed -e 's/video=[^ ]*//g' \
+        -e "s|root=[^ ]*|root=LABEL=$ROOT_LABEL|g" | \
+    xargs)
+
+echo "cmdline: $CMDLINE"
 
 kexec -l "$VMLINUZ" \
       --initrd="$INITRD" \
-      --append="$CURRENT_CMD root=LABEL=$ROOT_LABEL"
+      --append="$CMDLINE"
 
-echo "Unmounting and executing... See you on the other side."
+echo "Unmounting and executing..."
 umount "$MNT"
 
 systemctl kexec -i
-
