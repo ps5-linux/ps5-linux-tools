@@ -6,7 +6,7 @@
 - `install.sh`: Builds `ps5_control`, installs the systemd services, and enables fan and boost at startup.
 - `m2_init.c`: Creates a fake MBR header and GPT partition that makes PS5 OS happy.
 - `m2_install.sh`: Installs a Linux `.img` file by formatting the M.2 as ext4 and copying files over.
-- `m2_exec.sh`: Performs kexec into Linux on your M.2 SSD, or kexec reboots into the current system with `--reboot`.
+- `m2_exec.sh`: Performs kexec into Linux on your M.2 SSD.
 
 ## Systemd services
 
@@ -27,13 +27,3 @@ Disable either service if you do not want it at startup:
 sudo systemctl disable --now ps5fan.service
 sudo systemctl disable --now ps5boost.service
 ```
-
-## Kexec reboot
-
-If you are already booted from the M.2 system and want to kexec into your currently installed kernel:
-
-```sh
-sudo ./m2_exec.sh --reboot
-```
-
-This loads the current system's `/boot` kernel and initrd, reuses `/proc/cmdline`, and runs `systemctl kexec -i`.
