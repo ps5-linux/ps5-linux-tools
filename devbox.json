@@ -1,0 +1,33 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.17.2/.schema/devbox.schema.json",
+  "packages": [
+    "gcc",
+    "gnumake",
+    "zlib",
+    "gum",
+    "glibc.static",
+    "zlib.static"
+  ],
+  "shell": {
+    "init_hook": [
+      "gum style --foreground 212 --border double --border-foreground 212 --padding \"1 2\" --margin \"1\" \"🎮 PS5 Linux Tools Development Shell\"",
+      "echo \"Welcome! This environment is pre-configured with all build dependencies.\"",
+      "echo \"\"",
+      "echo \"$(gum style --foreground 117 'Available Scripts:')\"",
+      "echo \"  $(gum style --bold 'build')        : Compiles all tools (ps5_control, m2_init)\"",
+      "echo \"  $(gum style --bold 'build-static') : Compiles all tools statically against libc\"",
+      "echo \"  $(gum style --bold 'clean')        : Removes compiled binaries\"",
+      "echo \"  $(gum style --bold 'install')      : Installs tools and systemd services (requires sudo)\"",
+      "echo \"  $(gum style --bold 'reboot')       : Perform a warm reboot using kexec (requires sudo)\"",
+      "echo \"\"",
+      "echo \"Type $(gum style --foreground 82 'devbox run <script>') to execute.\""
+    ],
+    "scripts": {
+      "build":        "make",
+      "build-static": "make STATIC=1",
+      "clean":        "make clean",
+      "install":      "sudo ./install.sh",
+      "reboot":       "sudo ./ps5-linux-warm-reboot.sh"
+    }
+  }
+}

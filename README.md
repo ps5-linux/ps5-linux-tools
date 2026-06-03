@@ -8,6 +8,28 @@
 - `m2_install.sh`: Installs a Linux `.img` file by formatting the M.2 as ext4 and copying files over.
 - `m2_exec.sh`: Performs kexec into Linux on your M.2 SSD.
 
+## Development Environment
+
+This project uses [Devbox](https://www.jetify.com/devbox) to manage its development environment. 
+It ensures all dependencies (gcc, make, zlib, etc.) are available and provides a welcoming shell.
+
+To enter the development shell:
+```sh
+devbox shell
+```
+
+Once inside, you can use the following commands:
+- `devbox run build`: Build all tools.
+- `devbox run build-static`: Build all tools statically against libc.
+- `devbox run clean`: Clean build artifacts.
+- `devbox run install`: Install tools and systemd services (requires sudo).
+- `devbox run reboot`: Perform a warm reboot using kexec (requires sudo).
+
+Outside Devbox, static builds can also be requested with:
+```sh
+make STATIC=1
+```
+
 ## Systemd services
 
 Install the binary and enable both services:
