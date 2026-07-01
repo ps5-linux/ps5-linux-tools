@@ -32,8 +32,7 @@ echo "kernel: $VMLINUZ"
 echo "initrd: $INITRD"
 
 CMDLINE=$(cat /proc/cmdline | \
-    sed -e 's/video=[^ ]*//g' \
-        -e "s|root=[^ ]*|root=LABEL=$ROOT_LABEL|g" | \
+    sed -e "s|root=[^ ]*|root=LABEL=$ROOT_LABEL|g" | \
     xargs)
 
 echo "cmdline: $CMDLINE"
