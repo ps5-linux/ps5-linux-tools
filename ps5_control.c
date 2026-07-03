@@ -32,6 +32,8 @@ int main(int argc, char *argv[]) {
       pattern = 1;
     else if (strcmp(argv[2], "off") == 0)
       pattern = 0;
+    else if (strcmp(argv[2], "max") == 0)
+      pattern = 3;
     else {
       fprintf(stderr, "Invalid fan state '%s'. Use 'on' or 'off'.\n", argv[2]);
       return EXIT_FAILURE;
